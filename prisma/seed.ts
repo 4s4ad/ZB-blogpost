@@ -1,14 +1,23 @@
 import { PrismaClient } from '@prisma/client'
-import { PrismaBetterSqlite3 } from '@prisma/adapter-better-sqlite3'
 
 const url = process.env.DATABASE_URL || "file:./dev.db";
-const dbPath = url.startsWith("file:") ? url.slice(5) : url;
 
-const adapter = new PrismaBetterSqlite3({
-  url: dbPath
-})
+let prisma: PrismaClient;
 
-const prisma = new PrismaClient({ adapter })
+// Use better-sqlite3 only if we are not on Vercel and it's available
+if (!process.env.VERCEL) {
+  try {
+    const { PrismaBetterSqlite3 } = require('@prisma/adapter-better-sqlite3');
+    const dbPath = url.startsWith("file:") ? url.slice(5) : url;
+    const adapter = new PrismaBetterSqlite3({ url: dbPath });
+    prisma = new PrismaClient({ adapter });
+  } catch (e) {
+    console.warn('Falling back to default Prisma driver:', e);
+    prisma = new PrismaClient();
+  }
+} else {
+  prisma = new PrismaClient();
+}
 
 async function main() {
   console.log('🌱 Starting database seed...')
@@ -105,19 +114,19 @@ Start building your next project with Next.js today!`,
 
   // Connect categories and tags to article1
   await prisma.articleCategory.deleteMany({ where: { articleId: article1.id } })
-  await prisma.articleCategory.createMany({
-    data: [
-      { articleId: article1.id, categoryId: categories[0].id }, // Technology
-      { articleId: article1.id, categoryId: categories[2].id }, // Development
-    ],
+  await prisma.articleCategory.create({
+    data: { articleId: article1.id, categoryId: categories[0].id }, // Technology
+  })
+  await prisma.articleCategory.create({
+    data: { articleId: article1.id, categoryId: categories[2].id }, // Development
   })
 
   await prisma.articleTag.deleteMany({ where: { articleId: article1.id } })
-  await prisma.articleTag.createMany({
-    data: [
-      { articleId: article1.id, tagId: tags[1].id }, // Next.js
-      { articleId: article1.id, tagId: tags[2].id }, // TypeScript
-    ],
+  await prisma.articleTag.create({
+    data: { articleId: article1.id, tagId: tags[1].id }, // Next.js
+  })
+  await prisma.articleTag.create({
+    data: { articleId: article1.id, tagId: tags[2].id }, // TypeScript
   })
 
   console.log('✅ Created article:', article1.title)
@@ -148,13 +157,13 @@ Design is not just about aesthetics, it's about creating meaningful experiences.
   })
 
   await prisma.articleCategory.deleteMany({ where: { articleId: article2.id } })
-  await prisma.articleCategory.createMany({
-    data: [{ articleId: article2.id, categoryId: categories[1].id }], // Design
+  await prisma.articleCategory.create({
+    data: { articleId: article2.id, categoryId: categories[1].id }, // Design
   })
 
   await prisma.articleTag.deleteMany({ where: { articleId: article2.id } })
-  await prisma.articleTag.createMany({
-    data: [{ articleId: article2.id, tagId: tags[3].id }], // UI/UX
+  await prisma.articleTag.create({
+    data: { articleId: article2.id, tagId: tags[3].id }, // UI/UX
   })
 
   console.log('✅ Created article:', article2.title)
@@ -183,16 +192,16 @@ This is a draft article that needs more content.`,
   })
 
   await prisma.articleCategory.deleteMany({ where: { articleId: article3.id } })
-  await prisma.articleCategory.createMany({
-    data: [{ articleId: article3.id, categoryId: categories[2].id }], // Development
+  await prisma.articleCategory.create({
+    data: { articleId: article3.id, categoryId: categories[2].id }, // Development
   })
 
   await prisma.articleTag.deleteMany({ where: { articleId: article3.id } })
-  await prisma.articleTag.createMany({
-    data: [
-      { articleId: article3.id, tagId: tags[0].id }, // React
-      { articleId: article3.id, tagId: tags[2].id }, // TypeScript
-    ],
+  await prisma.articleTag.create({
+    data: { articleId: article3.id, tagId: tags[0].id }, // React
+  })
+  await prisma.articleTag.create({
+    data: { articleId: article3.id, tagId: tags[2].id }, // TypeScript
   })
 
   console.log('✅ Created article:', article3.title)

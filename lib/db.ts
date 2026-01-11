@@ -1,20 +1,30 @@
 import { PrismaClient } from '@prisma/client'
-import { PrismaBetterSqlite3 } from '@prisma/adapter-better-sqlite3'
-import Database from 'better-sqlite3'
-
 import path from 'path'
 
 const prismaClientSingleton = () => {
   const url = process.env.DATABASE_URL || "file:./dev.db"
-  let dbPath = url.startsWith("file:") ? url.slice(5) : url
   
-  // Make path absolute if it's relative
-  if (!path.isAbsolute(dbPath)) {
-    dbPath = path.join(process.cwd(), dbPath)
+  // If we are on Vercel, we use the default Prisma SQLite driver
+  // which is more compatible with the serverless environment
+  if (process.env.VERCEL || process.env.NODE_ENV === 'production') {
+    return new PrismaClient()
   }
-  
-  const adapter = new PrismaBetterSqlite3({ url: dbPath })
-  return new PrismaClient({ adapter })
+
+  // In local development, we use better-sqlite3 for performance
+  try {
+    const { PrismaBetterSqlite3 } = require('@prisma/adapter-better-sqlite3')
+    let dbPath = url.startsWith("file:") ? url.slice(5) : url
+    
+    if (!path.isAbsolute(dbPath)) {
+      dbPath = path.join(process.cwd(), dbPath)
+    }
+    
+    const adapter = new PrismaBetterSqlite3({ url: dbPath })
+    return new PrismaClient({ adapter })
+  } catch (e) {
+    console.warn("Could not load better-sqlite3 adapter, falling back to default driver:", e)
+    return new PrismaClient()
+  }
 }
 
 const globalForPrisma = global as unknown as { prisma: ReturnType<typeof prismaClientSingleton> }
@@ -22,7 +32,6 @@ const globalForPrisma = global as unknown as { prisma: ReturnType<typeof prismaC
 export const prisma = globalForPrisma.prisma || prismaClientSingleton()
 
 if (process.env.NODE_ENV !== 'production') globalForPrisma.prisma = prisma
-
 
 // Export types for convenience
 export type { User, Article, Category, Tag } from '@prisma/client'
@@ -59,8 +68,8 @@ export async function getArticlesWithRelations(options: {
   skip?: number
 }): Promise<ArticleWithRelations[]> {
   const articles = await prisma.article.findMany({
-    where: options.where,
-    orderBy: options.orderBy,
+    where: options.where as any,
+    orderBy: options.orderBy as any,
     take: options.take,
     skip: options.skip,
     include: {
@@ -239,12 +248,16 @@ export async function updateArticleWithRelations(
     })
     // Create new category relations
     if (categoryIds.length > 0) {
-      await prisma.articleCategory.createMany({
-        data: categoryIds.map((categoryId) => ({
-          articleId: id,
-          categoryId,
-        })),
-      })
+      // Use createMany if supported or multiple creates
+      // For SQLite, multiple creates might be safer or use a loop if createMany has issues with relations
+      for (const categoryId of categoryIds) {
+          await prisma.articleCategory.create({
+              data: {
+                  articleId: id,
+                  categoryId
+              }
+          })
+      }
     }
   }
 
@@ -255,19 +268,21 @@ export async function updateArticleWithRelations(
     })
     // Create new tag relations
     if (tagIds.length > 0) {
-      await prisma.articleTag.createMany({
-        data: tagIds.map((tagId) => ({
-          articleId: id,
-          tagId,
-        })),
-      })
+        for (const tagId of tagIds) {
+            await prisma.articleTag.create({
+                data: {
+                    articleId: id,
+                    tagId
+                }
+            })
+        }
     }
   }
 
   // Update the article
   const article = await prisma.article.update({
     where: { id },
-    data: articleData,
+    data: articleData as any,
     include: {
       categories: {
         include: {
@@ -329,7 +344,7 @@ export const db = {
       return article
     },
     count: async ({ where }: { where?: { published?: boolean } } = {}) => {
-      return prisma.article.count({ where })
+      return prisma.article.count({ where: where as any })
     },
   },
   category: {
