@@ -6,6 +6,7 @@ const nextConfig = {
   images: {
     unoptimized: true,
   },
+  serverExternalPackages: ["better-sqlite3", "@prisma/client"],
 }
 
 export default nextConfig
