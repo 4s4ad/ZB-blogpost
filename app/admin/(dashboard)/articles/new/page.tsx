@@ -1,6 +1,8 @@
 import { ArticleForm } from "@/components/admin/article-form"
 import { db } from "@/lib/db"
 
+export const dynamic = "force-dynamic"
+
 export const metadata = {
   title: "Create Article",
   description: "Create a new blog article",

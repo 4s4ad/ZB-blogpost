@@ -1,10 +1,10 @@
 import Link from "next/link"
 import Image from "next/image"
-import type { Article } from "@/lib/db"
+import type { ArticleWithRelations } from "@/lib/db"
 import { calculateReadingTime } from "@/lib/utils/markdown"
 
 interface ArticleCardProps {
-  article: Article
+  article: ArticleWithRelations
 }
 
 export function ArticleCard({ article }: ArticleCardProps) {

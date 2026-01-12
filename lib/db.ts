@@ -1,35 +1,17 @@
 import { PrismaClient } from '@prisma/client'
-import path from 'path'
+import { PrismaBetterSqlite3 } from '@prisma/adapter-better-sqlite3'
+import Database from 'better-sqlite3'
 
-const prismaClientSingleton = () => {
-  const url = process.env.DATABASE_URL || "file:./dev.db"
-  
-  // If we are on Vercel, we use the default Prisma SQLite driver
-  // which is more compatible with the serverless environment
-  if (process.env.VERCEL || process.env.NODE_ENV === 'production') {
-    return new PrismaClient()
-  }
+const globalForPrisma = global as unknown as { prisma: PrismaClient }
 
-  // In local development, we use better-sqlite3 for performance
-  try {
-    const { PrismaBetterSqlite3 } = require('@prisma/adapter-better-sqlite3')
-    let dbPath = url.startsWith("file:") ? url.slice(5) : url
-    
-    if (!path.isAbsolute(dbPath)) {
-      dbPath = path.join(process.cwd(), dbPath)
-    }
-    
-    const adapter = new PrismaBetterSqlite3({ url: dbPath })
-    return new PrismaClient({ adapter })
-  } catch (e) {
-    console.warn("Could not load better-sqlite3 adapter, falling back to default driver:", e)
-    return new PrismaClient()
-  }
-}
+const adapter = new PrismaBetterSqlite3({ url: 'file:./dev.db' })
 
-const globalForPrisma = global as unknown as { prisma: ReturnType<typeof prismaClientSingleton> }
-
-export const prisma = globalForPrisma.prisma || prismaClientSingleton()
+export const prisma =
+  globalForPrisma.prisma ||
+  new PrismaClient({
+    adapter,
+    log: process.env.NODE_ENV === 'development' ? ['query', 'error', 'warn'] : ['error'],
+  })
 
 if (process.env.NODE_ENV !== 'production') globalForPrisma.prisma = prisma
 
@@ -94,7 +76,7 @@ export async function getArticlesWithRelations(options: {
   })
 
   // Transform the data to match the expected format
-  return articles.map((article) => ({
+  return articles.map((article: any) => ({
     id: article.id,
     title: article.title,
     slug: article.slug,
@@ -106,8 +88,8 @@ export async function getArticlesWithRelations(options: {
     authorId: article.authorId,
     createdAt: article.createdAt,
     updatedAt: article.updatedAt,
-    categories: article.categories.map((ac) => ac.category),
-    tags: article.tags.map((at) => at.tag),
+    categories: article.categories.map((ac: any) => ac.category),
+    tags: article.tags.map((at: any) => at.tag),
   }))
 }
 
@@ -154,8 +136,8 @@ export async function getArticleWithRelations(where: {
     authorId: article.authorId,
     createdAt: article.createdAt,
     updatedAt: article.updatedAt,
-    categories: article.categories.map((ac) => ac.category),
-    tags: article.tags.map((at) => at.tag),
+    categories: article.categories.map((ac: any) => ac.category),
+    tags: article.tags.map((at: any) => at.tag),
   }
 }
 
@@ -218,8 +200,8 @@ export async function createArticleWithRelations(data: {
     authorId: article.authorId,
     createdAt: article.createdAt,
     updatedAt: article.updatedAt,
-    categories: article.categories.map((ac) => ac.category),
-    tags: article.tags.map((at) => at.tag),
+    categories: article.categories.map((ac: any) => ac.category),
+    tags: article.tags.map((at: any) => at.tag),
   }
 }
 
@@ -309,8 +291,8 @@ export async function updateArticleWithRelations(
     authorId: article.authorId,
     createdAt: article.createdAt,
     updatedAt: article.updatedAt,
-    categories: article.categories.map((ac) => ac.category),
-    tags: article.tags.map((at) => at.tag),
+    categories: article.categories.map((ac: any) => ac.category),
+    tags: article.tags.map((at: any) => at.tag),
   }
 }
 
