@@ -1,7 +1,10 @@
-import Link from "next/link"
+"use client"
+
+import { Link } from "@/i18n/navigation"
 import Image from "next/image"
 import type { ArticleWithRelations } from "@/lib/db"
 import { calculateReadingTime } from "@/lib/utils/markdown"
+import { useLocale, useTranslations } from "next-intl"
 
 interface ArticleCardProps {
   article: ArticleWithRelations
@@ -9,6 +12,8 @@ interface ArticleCardProps {
 
 export function ArticleCard({ article }: ArticleCardProps) {
   const readingTime = calculateReadingTime(article.content)
+  const locale = useLocale()
+  const t = useTranslations("blog")
 
   return (
     <Link
@@ -34,14 +39,14 @@ export function ArticleCard({ article }: ArticleCardProps) {
       <div className="flex items-center gap-4 text-xs text-muted-foreground">
         {article.publishedAt && (
           <time dateTime={article.publishedAt.toISOString()}>
-            {new Date(article.publishedAt).toLocaleDateString("en-US", {
+            {new Date(article.publishedAt).toLocaleDateString(locale === "ar" ? "ar-SA" : "en-US", {
               month: "short",
               day: "numeric",
               year: "numeric",
             })}
           </time>
         )}
-        <span>{readingTime} min read</span>
+        <span>{t("minRead", { count: readingTime })}</span>
         {article.categories.length > 0 && (
           <span className="rounded-full bg-primary/10 px-2 py-1 text-primary">{article.categories[0].name}</span>
         )}

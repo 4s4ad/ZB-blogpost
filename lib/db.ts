@@ -1,11 +1,11 @@
-import { PrismaClient } from '@prisma/client'
-import { Pool } from 'pg'
-import { PrismaPg } from '@prisma/adapter-pg'
+import { PrismaClient } from '.prisma/client'
+import { PrismaBetterSqlite3 } from '@prisma/adapter-better-sqlite3'
+import path from 'path'
 
 const globalForPrisma = global as unknown as { prisma: PrismaClient }
 
-const pool = new Pool({ connectionString: process.env.DATABASE_URL || process.env.POSTGRES_URL })
-const adapter = new PrismaPg(pool)
+const dbPath = path.join(process.cwd(), 'prisma', 'dev.db')
+const adapter = new PrismaBetterSqlite3({ url: dbPath })
 
 export const prisma =
   globalForPrisma.prisma ||
@@ -14,7 +14,7 @@ export const prisma =
 if (process.env.NODE_ENV !== 'production') globalForPrisma.prisma = prisma
 
 // Export types for convenience
-export type { User, Article, Category, Tag } from '@prisma/client'
+export type { User, Article, Category, Tag } from '.prisma/client'
 
 // Article with relations type
 export type ArticleWithRelations = {

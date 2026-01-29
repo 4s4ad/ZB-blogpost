@@ -124,3 +124,27 @@
     @apply bg-background text-foreground;
   }
 }
+
+/* RTL Support */
+[dir="rtl"] {
+  /* Flip directional icons */
+  .rtl\:rotate-180 {
+    transform: rotate(180deg);
+  }
+}
+
+/* RTL-aware prose styles */
+[dir="rtl"] .prose {
+  text-align: right;
+}
+
+[dir="rtl"] .prose ul,
+[dir="rtl"] .prose ol {
+  padding-right: 1.5rem;
+  padding-left: 0;
+}
+
+/* Arabic font stack */
+[dir="rtl"] body {
+  font-family: "Geist", "Noto Sans Arabic", "Segoe UI", "Tahoma", sans-serif;
+}

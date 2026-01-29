@@ -2,6 +2,8 @@ import { ArticleCard } from "@/components/article-card"
 import { db } from "@/lib/db"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
+import { getTranslations } from "next-intl/server"
+import { Link } from "@/i18n/navigation"
 
 export const dynamic = "force-dynamic"
 
@@ -11,7 +13,8 @@ export default async function BlogPage({
   searchParams: Promise<{ category?: string; tag?: string; search?: string }>
 }) {
   const params = await searchParams
-  
+  const t = await getTranslations("blog")
+
   try {
     const articles = await db.article.findMany({
       where: { published: true },
@@ -20,7 +23,6 @@ export default async function BlogPage({
 
     const categories = await db.category.findMany()
 
-    // Filter articles based on search params
     let filteredArticles = articles
 
     if (params.category) {
@@ -44,9 +46,9 @@ export default async function BlogPage({
     return (
       <div className="container mx-auto max-w-6xl px-4 py-12">
         <div className="mb-12 flex flex-col gap-4">
-          <h1 className="text-4xl font-bold text-foreground">All Articles</h1>
+          <h1 className="text-4xl font-bold text-foreground">{t("title")}</h1>
           <p className="text-lg text-muted-foreground">
-            Explore all published articles on technology, design, and development.
+            {t("description")}
           </p>
         </div>
 
@@ -56,7 +58,7 @@ export default async function BlogPage({
             <Input
               type="search"
               name="search"
-              placeholder="Search articles..."
+              placeholder={t("searchPlaceholder")}
               defaultValue={params.search}
               className="max-w-md"
             />
@@ -66,7 +68,7 @@ export default async function BlogPage({
         {/* Categories */}
         <div className="mb-8 flex flex-wrap gap-2">
           <Button asChild variant={!params.category ? "default" : "outline"} size="sm">
-            <a href="/blog">All</a>
+            <Link href="/blog">{t("all")}</Link>
           </Button>
           {categories.map((category) => (
             <Button
@@ -75,7 +77,7 @@ export default async function BlogPage({
               variant={params.category === category.slug ? "default" : "outline"}
               size="sm"
             >
-              <a href={`/blog?category=${category.slug}`}>{category.name}</a>
+              <Link href={`/blog?category=${category.slug}`}>{category.name}</Link>
             </Button>
           ))}
         </div>
@@ -89,7 +91,7 @@ export default async function BlogPage({
           </div>
         ) : (
           <div className="py-12 text-center">
-            <p className="text-lg text-muted-foreground">No articles found.</p>
+            <p className="text-lg text-muted-foreground">{t("noArticles")}</p>
           </div>
         )}
       </div>
@@ -98,8 +100,8 @@ export default async function BlogPage({
     console.error("Error loading blog page:", error)
     return (
       <div className="container mx-auto px-4 py-12 text-center">
-        <h1 className="text-2xl font-bold text-destructive">Error Loading Blog</h1>
-        <p className="mt-4 text-muted-foreground">We're having trouble loading the articles. Please try again later.</p>
+        <h1 className="text-2xl font-bold text-destructive">{t("errorLoading")}</h1>
+        <p className="mt-4 text-muted-foreground">{t("errorMessage")}</p>
       </div>
     )
   }

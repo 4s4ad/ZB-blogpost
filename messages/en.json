@@ -1,0 +1,78 @@
+{
+  "common": {
+    "siteName": "MyBlog",
+    "loading": "Loading...",
+    "error": "Error",
+    "tryAgain": "Try again"
+  },
+  "navigation": {
+    "home": "Home",
+    "blog": "Blog",
+    "about": "About",
+    "admin": "Admin"
+  },
+  "home": {
+    "welcome": "Welcome to My Blog",
+    "description": "Exploring technology, design, and development. Sharing insights and experiences from the world of modern web development.",
+    "readArticles": "Read Articles",
+    "aboutMe": "About Me",
+    "latestArticles": "Latest Articles",
+    "viewAll": "View All",
+    "errorLoading": "Error loading latest articles. Please check back later.",
+    "goToBlog": "Go to Blog"
+  },
+  "blog": {
+    "title": "All Articles",
+    "description": "Explore all published articles on technology, design, and development.",
+    "searchPlaceholder": "Search articles...",
+    "all": "All",
+    "noArticles": "No articles found.",
+    "minRead": "{count} min read",
+    "backToBlog": "Back to Blog",
+    "backToAllArticles": "Back to All Articles",
+    "errorLoading": "Error Loading Blog",
+    "errorLoadingArticle": "Error Loading Article",
+    "errorMessage": "We're having trouble loading the articles. Please try again later.",
+    "errorMessageArticle": "We're having trouble loading this article. Please try again later."
+  },
+  "about": {
+    "title": "About Me",
+    "intro": "Welcome to my personal blog! I'm a passionate developer and writer sharing my journey in technology, design, and web development.",
+    "description": "Through this platform, I aim to share insights, tutorials, and experiences that I've gathered throughout my career. Whether you're a fellow developer, a designer, or simply curious about technology, I hope you find something valuable here.",
+    "whatIWrite": "What I Write About",
+    "topics": {
+      "nextjs": "Modern web development with Next.js and React",
+      "uiux": "UI/UX design principles and best practices",
+      "typescript": "TypeScript and type-safe development",
+      "scalable": "Building scalable applications"
+    },
+    "getInTouch": "Get In Touch",
+    "getInTouchText": "Feel free to reach out to me on social media or via email. I'm always happy to connect with fellow developers and enthusiasts!"
+  },
+  "errors": {
+    "404": {
+      "title": "404",
+      "subtitle": "Page Not Found",
+      "description": "The page you're looking for doesn't exist or has been moved.",
+      "goHome": "Go Home",
+      "browseArticles": "Browse Articles"
+    },
+    "generic": {
+      "title": "Something went wrong!",
+      "description": "An unexpected error occurred. Please try again."
+    }
+  },
+  "footer": {
+    "copyright": "© {year} MyBlog. All rights reserved.",
+    "github": "GitHub",
+    "twitter": "Twitter"
+  },
+  "metadata": {
+    "title": "MyBlog - Modern Web Development Insights",
+    "description": "A personal blog about technology, design, and web development."
+  },
+  "article": {
+    "notFound": "Article Not Found",
+    "errorOccurred": "Error occurred"
+  }
+}

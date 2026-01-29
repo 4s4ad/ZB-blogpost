@@ -4,13 +4,15 @@ import { db } from "@/lib/db"
 import { calculateReadingTime } from "@/lib/utils/markdown"
 import { MarkdownRenderer } from "@/components/markdown-renderer"
 import { Button } from "@/components/ui/button"
-import Link from "next/link"
+import { Link } from "@/i18n/navigation"
+import { getTranslations, getLocale } from "next-intl/server"
 
 export const dynamic = "force-dynamic"
 
-export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }) {
-  const { slug } = await params
-  
+export async function generateMetadata({ params }: { params: Promise<{ slug: string; locale: string }> }) {
+  const { slug, locale } = await params
+  const t = await getTranslations({ locale, namespace: "article" })
+
   try {
     const article = await db.article.findUnique({
       where: { slug: slug },
@@ -18,7 +20,7 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
 
     if (!article || !article.published) {
       return {
-        title: "Article Not Found",
+        title: t("notFound"),
       }
     }
 
@@ -34,13 +36,15 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
   } catch (error) {
     console.error(`Error generating metadata for slug: ${slug}`, error)
     return {
-      title: "Error occurred",
+      title: t("errorOccurred"),
     }
   }
 }
 
-export default async function ArticlePage({ params }: { params: Promise<{ slug: string }> }) {
+export default async function ArticlePage({ params }: { params: Promise<{ slug: string; locale: string }> }) {
   const { slug } = await params
+  const t = await getTranslations("blog")
+  const locale = await getLocale()
 
   try {
     const article = await db.article.findUnique({
@@ -62,7 +66,9 @@ export default async function ArticlePage({ params }: { params: Promise<{ slug: 
         {/* Article Header */}
         <div className="mb-8 flex flex-col gap-4">
           <Button asChild variant="ghost" size="sm" className="w-fit">
-            <Link href="/blog">← Back to Blog</Link>
+            <Link href="/blog" className="flex items-center gap-1">
+              <span className="rtl:rotate-180">←</span> {t("backToBlog")}
+            </Link>
           </Button>
           <h1 className="text-balance text-4xl font-bold leading-tight text-foreground md:text-5xl">{article.title}</h1>
           <p className="text-pretty text-xl text-muted-foreground">{article.excerpt}</p>
@@ -70,14 +76,14 @@ export default async function ArticlePage({ params }: { params: Promise<{ slug: 
             <span>{author?.name}</span>
             {article.publishedAt && (
               <time dateTime={article.publishedAt.toISOString()}>
-                {new Date(article.publishedAt).toLocaleDateString("en-US", {
+                {new Date(article.publishedAt).toLocaleDateString(locale === "ar" ? "ar-SA" : "en-US", {
                   month: "long",
                   day: "numeric",
                   year: "numeric",
                 })}
               </time>
             )}
-            <span>{readingTime} min read</span>
+            <span>{t("minRead", { count: readingTime })}</span>
           </div>
           {/* Categories and Tags */}
           <div className="flex flex-wrap gap-2">
@@ -117,7 +123,9 @@ export default async function ArticlePage({ params }: { params: Promise<{ slug: 
         {/* Back to Blog */}
         <div className="border-t border-border pt-8">
           <Button asChild variant="outline">
-            <Link href="/blog">← Back to All Articles</Link>
+            <Link href="/blog" className="flex items-center gap-1">
+              <span className="rtl:rotate-180">←</span> {t("backToAllArticles")}
+            </Link>
           </Button>
         </div>
       </article>
@@ -126,10 +134,10 @@ export default async function ArticlePage({ params }: { params: Promise<{ slug: 
     console.error(`Error loading article page for slug: ${slug}`, error)
     return (
       <div className="container mx-auto px-4 py-12 text-center">
-        <h1 className="text-2xl font-bold text-destructive">Error Loading Article</h1>
-        <p className="mt-4 text-muted-foreground">We're having trouble loading this article. Please try again later.</p>
+        <h1 className="text-2xl font-bold text-destructive">{t("errorLoadingArticle")}</h1>
+        <p className="mt-4 text-muted-foreground">{t("errorMessageArticle")}</p>
         <Button asChild className="mt-8" variant="outline">
-          <Link href="/blog">Back to Blog</Link>
+          <Link href="/blog">{t("backToBlog")}</Link>
         </Button>
       </div>
     )
